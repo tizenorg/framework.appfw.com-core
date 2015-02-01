@@ -41,12 +41,13 @@ enum packet_flag {
 /*!
  * \brief Version of current protocol (packet)
  */
-#define PACKET_VERSION	2
+#define PACKET_VERSION	3
 
 /*!
  * \brief Maximum length of a command string
  */
 #define PACKET_MAX_CMD	24
+#define PACKET_CMD_INT_TAG	0x01
 
 /*!
  * \brief Create a packet
@@ -375,6 +376,9 @@ extern const int const packet_size(const struct packet *packet);
  * \retval
  */
 extern struct packet *packet_build(struct packet *packet, int offset, void *data, int size);
+
+extern int packet_fd(const struct packet *packet);
+extern int packet_set_fd(struct packet *packet, int fd);
 
 #ifdef __cplusplus
 }
