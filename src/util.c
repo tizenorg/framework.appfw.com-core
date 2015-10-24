@@ -57,13 +57,13 @@ double util_timestamp(void)
 			return ts.tv_sec + ts.tv_nsec / 1000000000.0f;
 		}
 
-		ErrPrint("%d: %s\n", s_info.type, strerror(errno));
+		ErrPrint("%d: %d\n", s_info.type, errno);
 		if (s_info.type == CLOCK_MONOTONIC) {
 			s_info.type = CLOCK_REALTIME;
 		} else if (s_info.type == CLOCK_REALTIME) {
 			struct timeval tv;
 			if (gettimeofday(&tv, NULL) < 0) {
-				ErrPrint("gettimeofday: %s\n", strerror(errno));
+				ErrPrint("gettimeofday: %d\n", errno);
 				break;
 			}
 
@@ -76,7 +76,7 @@ double util_timestamp(void)
 	struct timeval tv;
 
 	if (gettimeofday(&tv, NULL) < 0) {
-		ErrPrint("gettimeofday: %s\n", strerror(errno));
+		ErrPrint("gettimeofday: %d\n", errno);
 		tv.tv_sec = 0;
 		tv.tv_usec = 0;
 	}

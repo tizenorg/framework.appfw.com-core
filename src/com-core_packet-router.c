@@ -298,7 +298,7 @@ static inline struct request_ctx *create_request_ctx(int handle)
 
 	ctx = malloc(sizeof(*ctx));
 	if (!ctx) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -491,7 +491,7 @@ static inline int select_event(int handle, double timeout)
 
 	status = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	if (status != 0) {
-		ErrPrint("Failed to set cancelstate: %s\n", strerror(status));
+		ErrPrint("Failed to set cancelstate: %d\n", status);
 	}
 	if (timeout > 0.0f) {
 		struct timeval tv;
@@ -506,7 +506,7 @@ static inline int select_event(int handle, double timeout)
 		ErrPrint("Invalid timeout: %lf (it must be greater than 0.0)\n", timeout);
 		status = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		if (status != 0) {
-			ErrPrint("Failed to set cancelstate: %s\n", strerror(status));
+			ErrPrint("Failed to set cancelstate: %d\n", status);
 		}
 		return -EINVAL;
 	}
@@ -519,23 +519,23 @@ static inline int select_event(int handle, double timeout)
 			return -EAGAIN;
 		}
 
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 		status = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		if (status != 0) {
-			ErrPrint("Failed to set cancelstate: %s\n", strerror(status));
+			ErrPrint("Failed to set cancelstate: %d\n", status);
 		}
 		return ret;
 	} else if (ret == 0) {
 		ErrPrint("Timeout expired\n");
 		status = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		if (status != 0) {
-			ErrPrint("Failed to set cancelstate: %s\n", strerror(status));
+			ErrPrint("Failed to set cancelstate: %d\n", status);
 		}
 		return -ETIMEDOUT;
 	}
 	status = pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	if (status != 0) {
-		ErrPrint("Failed to set cancelstate: %s\n", strerror(status));
+		ErrPrint("Failed to set cancelstate: %d\n", status);
 	}
 
 	if (!FD_ISSET(handle, &set)) {
@@ -605,23 +605,23 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 	router = calloc(1, sizeof(*router));
 	if (!router) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
 	ret = pthread_mutex_init(&router->recv_packet_list_lock, NULL);
 	if (ret != 0) {
-		ErrPrint("Mutex creation failed: %s\n", strerror(ret));
+		ErrPrint("Mutex creation failed: %d\n", ret);
 		free(router);
 		return NULL;
 	}
 
 	ret = pthread_mutex_init(&router->route_list_lock, NULL);
 	if (ret != 0) {
-		ErrPrint("Mutex craetion failed: %s\n", strerror(ret));
+		ErrPrint("Mutex craetion failed: %d\n", ret);
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -630,16 +630,16 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 	ret = pthread_mutex_init(&router->send_packet_list_lock, NULL);
 	if (ret != 0) {
-		ErrPrint("Mutex creation failed: %s\n", strerror(ret));
+		ErrPrint("Mutex creation failed: %d\n", ret);
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -648,20 +648,20 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 	router->sock = strdup(sock);
 	if (!router->sock) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -670,22 +670,22 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 	ret = pipe2(router->recv_pipe, O_NONBLOCK | O_CLOEXEC);
 	if (ret < 0) {
-		ErrPrint("pipe2: %s\n", strerror(errno));
+		ErrPrint("pipe2: %d\n", errno);
 		free(router->sock);
 
 		ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -694,24 +694,24 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 	ret = pipe2(router->send_pipe, O_NONBLOCK | O_CLOEXEC);
 	if (ret < 0) {
-		ErrPrint("pipe2: %s\n", strerror(errno));
+		ErrPrint("pipe2: %d\n", errno);
 		free(router->sock);
 
 		CLOSE_PIPE(router->recv_pipe);
 
 		ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -731,17 +731,17 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 		ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -766,17 +766,17 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 		ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -789,7 +789,7 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 	ret = pthread_create(&router->send_thid, NULL, send_main, router);
 	if (ret != 0) {
-		ErrPrint("Failed to create a send thread: %s\n", strerror(ret));
+		ErrPrint("Failed to create a send thread: %d\n", ret);
 		dlist_remove_data(s_info.router_list, router);
 
 		g_source_remove(router->id);
@@ -801,17 +801,17 @@ static struct router *create_router(const char *sock, int handle, struct method 
 
 		ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		ret = pthread_mutex_destroy(&router->route_list_lock);
 		if (ret != 0) {
-			ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+			ErrPrint("Mutex destroy failed: %d\n", ret);
 		}
 
 		free(router);
@@ -837,7 +837,7 @@ static inline __attribute__((always_inline)) int destroy_router(struct router *r
 
 	ret = pthread_join(router->send_thid, NULL);
 	if (ret != 0) {
-		ErrPrint("Join: %s\n", strerror(ret));
+		ErrPrint("Join: %d\n", ret);
 	}
 
 	dlist_remove_data(s_info.router_list, router);
@@ -853,17 +853,17 @@ static inline __attribute__((always_inline)) int destroy_router(struct router *r
 
 	ret = pthread_mutex_destroy(&router->send_packet_list_lock);
 	if (ret != 0) {
-		ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+		ErrPrint("Mutex destroy failed: %d\n", ret);
 	}
 
 	ret = pthread_mutex_destroy(&router->recv_packet_list_lock);
 	if (ret != 0) {
-		ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+		ErrPrint("Mutex destroy failed: %d\n", ret);
 	}
 
 	ret = pthread_mutex_destroy(&router->route_list_lock);
 	if (ret != 0) {
-		ErrPrint("Mutex destroy failed: %s\n", strerror(ret));
+		ErrPrint("Mutex destroy failed: %d\n", ret);
 	}
 
 	handle = router->handle;
@@ -959,7 +959,7 @@ static int put_send_packet(struct router *router, int handle, struct packet *pac
 	 * Producing an event on event pipe
 	 */
 	if (write(router->send_pipe[PIPE_WRITE], &handle, sizeof(handle)) != sizeof(handle)) {
-		ErrPrint("Failed to put an event: %s\n", strerror(errno));
+		ErrPrint("Failed to put an event: %d\n", errno);
 	}
 
 	return 0;
@@ -998,7 +998,7 @@ static int put_recv_packet(struct router *router, int handle, struct packet *pac
 	 * Producing an event on event pipe
 	 */
 	if (write(router->recv_pipe[PIPE_WRITE], &handle, sizeof(handle)) != sizeof(handle)) {
-		ErrPrint("Failed to put an event: %s\n", strerror(errno));
+		ErrPrint("Failed to put an event: %d\n", errno);
 	}
 
 	return 0;
@@ -1027,7 +1027,7 @@ static struct packet *get_send_packet(struct router *router, int *handle)
 	CRITICAL_SECTION_END(&router->send_packet_list_lock);
 
 	if (read(router->send_pipe[PIPE_READ], handle, sizeof(*handle)) != sizeof(*handle)) {
-		ErrPrint("Failed to get an event: %s\n", strerror(errno));
+		ErrPrint("Failed to get an event: %d\n", errno);
 	}
 
 	return packet;
@@ -1067,7 +1067,7 @@ static struct packet *get_recv_packet(struct router *router, int *handle, pid_t 
 	 * Because the NULL packet means disconnected
 	 */
 	if (read(router->recv_pipe[PIPE_READ], handle, sizeof(*handle)) != sizeof(*handle)) {
-		ErrPrint("Failed to get an event: %s\n", strerror(errno));
+		ErrPrint("Failed to get an event: %d\n", errno);
 	}
 
 	return packet;
@@ -1088,7 +1088,7 @@ static inline int build_packet(int handle, struct recv_ctx *ctx)
 
 		ptr = malloc(size);
 		if (!ptr) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 			return -ENOMEM;
 		}
 
@@ -1127,7 +1127,7 @@ static inline int build_packet(int handle, struct recv_ctx *ctx)
 
 		ptr = malloc(size);
 		if (!ptr) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 			return -ENOMEM;
 		}
 
@@ -1283,16 +1283,16 @@ static gboolean accept_cb(GIOChannel *src, GIOCondition cond, gpointer data)
 	}
 
 	if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	client = calloc(1, sizeof(*client));
 	if (!client) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		secure_socket_destroy_handle(fd);
 		/*!
 		 * \NOTE
@@ -1307,7 +1307,7 @@ static gboolean accept_cb(GIOChannel *src, GIOCondition cond, gpointer data)
 
 	status = pthread_create(&client->thid, NULL, server_main, client);
 	if (status != 0) {
-		ErrPrint("Thread creation failed: %s\n", strerror(status));
+		ErrPrint("Thread creation failed: %d\n", status);
 		dlist_remove_data(router->info.server.client_list, client);
 		secure_socket_destroy_handle(client->handle);
 		free(client);
@@ -1400,7 +1400,7 @@ EAPI int com_core_packet_router_client_init(const char *sock, double timeout, st
 
 	status = pthread_mutex_init(&router->recv_packet_list_lock, NULL);
 	if (status != 0) {
-		ErrPrint("Mutex creation failed: %s\n", strerror(status));
+		ErrPrint("Mutex creation failed: %d\n", status);
 
 		handle = destroy_router(router);
 		secure_socket_destroy_handle(handle);
@@ -1409,7 +1409,7 @@ EAPI int com_core_packet_router_client_init(const char *sock, double timeout, st
 
 	status = pthread_mutex_init(&router->route_list_lock, NULL);
 	if (status != 0) {
-		ErrPrint("Mutex creation failed: %s\n", strerror(status));
+		ErrPrint("Mutex creation failed: %d\n", status);
 		handle = destroy_router(router);
 		secure_socket_destroy_handle(handle);
 		return -EFAULT;
@@ -1417,7 +1417,7 @@ EAPI int com_core_packet_router_client_init(const char *sock, double timeout, st
 
 	status = pthread_create(&router->info.client.thid, NULL, client_main, router);
 	if (status != 0) {
-		ErrPrint("Thread creation failed: %s\n", strerror(status));
+		ErrPrint("Thread creation failed: %d\n", status);
 		handle = destroy_router(router);
 		secure_socket_destroy_handle(handle);
 		return -EFAULT;
@@ -1459,13 +1459,13 @@ EAPI void *com_core_packet_router_server_fini(int handle)
 
 		status = pthread_cancel(client->thid);
 		if (status != 0) {
-			ErrPrint("Failed to cacnel a thread: %s\n", strerror(errno));
+			ErrPrint("Failed to cacnel a thread: %d\n", errno);
 		}
 
 		ret = NULL;
 		status = pthread_join(client->thid, &ret);
 		if (status != 0) {
-			ErrPrint("Failed to join a thread: %s\n", strerror(errno));
+			ErrPrint("Failed to join a thread: %d\n", errno);
 		}
 
 		if (ret == PTHREAD_CANCELED) {
@@ -1519,12 +1519,12 @@ EAPI void *com_core_packet_router_client_fini(int handle)
 
 	status = pthread_cancel(router->info.client.thid);
 	if (status != 0) {
-		ErrPrint("Failed to cancel a thread: %s\n", strerror(errno));
+		ErrPrint("Failed to cancel a thread: %d\n", errno);
 	}
 
 	status = pthread_join(router->info.client.thid, &ret);
 	if (status != 0) {
-		ErrPrint("Failed to join a thread: %s\n", strerror(errno));
+		ErrPrint("Failed to join a thread: %d\n", errno);
 	}
 
 	if (ret == PTHREAD_CANCELED) {
@@ -1641,7 +1641,7 @@ EAPI int com_core_packet_router_add_route(int handle, unsigned long address, int
 
 	route = malloc(sizeof(*route));
 	if (!route) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return -ENOMEM;
 	}
 
@@ -1769,7 +1769,7 @@ EAPI int com_core_packet_router_add_event_callback(enum com_core_route_event_typ
 
 	item = malloc(sizeof(*item));
 	if (!item) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return -ENOMEM;
 	}
 

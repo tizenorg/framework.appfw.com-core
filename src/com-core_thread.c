@@ -107,7 +107,7 @@ static ssize_t write_safe(int fd, const void *data, size_t bufsz)
 				ErrPrint("Interrupted[%d] Again[%d]\n", fd, -ret);
 				break;
 			default:
-				ErrPrint("Failed to write: %s (%d)\n", strerror(-ret), -ret);
+				ErrPrint("Failed to write: %d\n", -ret);
 				return ret;
 			}
 		}
@@ -145,7 +145,7 @@ static inline struct server *server_create(int handle, int (*service_cb)(int fd,
 
 	server = malloc(sizeof(*server));
 	if (!server) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -187,9 +187,9 @@ static inline void terminate_thread(struct tcb *tcb)
 
 	status = pthread_join(tcb->thid, &res);
 	if (status != 0) {
-		ErrPrint("Join: %s\n", strerror(status));
+		ErrPrint("Join: %d\n", status);
 	} else {
-		ErrPrint("Thread returns: %d\n", (int)res);
+		ErrPrint("Thread returns: %d\n", (int)((long)res));
 	}
 
 	dlist_foreach_safe(tcb->chunk_list, l, n, chunk) {
@@ -290,7 +290,7 @@ static inline int wait_event(struct tcb *tcb, double timeout)
 			return -EAGAIN;
 		}
 
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 		return ret;
 	} else if (ret == 0) {
 		ErrPrint("Timeout expired\n");
@@ -315,13 +315,13 @@ static inline struct chunk *create_chunk(int size)
 
 	chunk = malloc(sizeof(*chunk));
 	if (!chunk) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
 	chunk->data = malloc(size);
 	if (!chunk->data) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		free(chunk);
 		return NULL;
 	}
@@ -367,7 +367,7 @@ static void *client_cb(void *data)
 			}
 			ret = -errno;
 			/*!< Error */
-			ErrPrint("Error: %s\n", strerror(errno));
+			ErrPrint("Error: %d\n", errno);
 			break;
 		} else if (ret == 0) {
 			ErrPrint("What happens? [%d]\n", tcb->handle);
@@ -389,7 +389,7 @@ static void *client_cb(void *data)
 		readsize = 0;
 		ret = ioctl(tcb->handle, FIONREAD, &readsize);
 		if (ret < 0) {
-			ErrPrint("ioctl: %s\n", strerror(errno));
+			ErrPrint("ioctl: %d\n", errno);
 			break;
 		}
 
@@ -460,7 +460,7 @@ static inline void tcb_destroy(struct tcb *tcb)
 
 	status = pthread_mutex_destroy(&tcb->chunk_lock);
 	if (status != 0) {
-		ErrPrint("Failed to destroy mutex: %s\n", strerror(status));
+		ErrPrint("Failed to destroy mutex: %d\n", status);
 	}
 
 	free(tcb);
@@ -520,7 +520,7 @@ static inline struct tcb *tcb_create(int client_fd, int is_sync, int (*service_c
 
 	tcb = malloc(sizeof(*tcb));
 	if (!tcb) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 		return NULL;
 	}
 
@@ -532,29 +532,29 @@ static inline struct tcb *tcb_create(int client_fd, int is_sync, int (*service_c
 
 	status = pthread_mutex_init(&tcb->chunk_lock, NULL);
 	if (status != 0) {
-		ErrPrint("Error: %s\n", strerror(status));
+		ErrPrint("Error: %d\n", status);
 		free(tcb);
 		return NULL;
 	}
 
 	if (pipe2(tcb->evt_pipe, O_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 		status = pthread_mutex_destroy(&tcb->chunk_lock);
 		if (status != 0) {
-			ErrPrint("Error: %s\n", strerror(status));
+			ErrPrint("Error: %d\n", status);
 		}
 		free(tcb);
 		return NULL;
 	}
 
 	if (pipe2(tcb->ctrl_pipe, O_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 
 		CLOSE_PIPE(tcb->evt_pipe);
 
 		status = pthread_mutex_destroy(&tcb->chunk_lock);
 		if (status != 0) {
-			ErrPrint("Error: %s\n", strerror(status));
+			ErrPrint("Error: %d\n", status);
 		}
 
 		free(tcb);
@@ -601,11 +601,11 @@ static gboolean accept_cb(GIOChannel *src, GIOCondition cond, gpointer data)
 	}
 
 	if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	tcb = tcb_create(fd, 0, server->service_cb, server->data);
@@ -656,22 +656,22 @@ static gboolean accept_cb(GIOChannel *src, GIOCondition cond, gpointer data)
 
 		ret = pthread_attr_setscope(pattr, PTHREAD_SCOPE_SYSTEM);
 		if (ret != 0) {
-			ErrPrint("setscope: %s\n", strerror(ret));
+			ErrPrint("setscope: %d\n", ret);
 		}
 
 		ret = pthread_attr_setinheritsched(pattr, PTHREAD_EXPLICIT_SCHED);
 		if (ret != 0) {
-			ErrPrint("setinheritsched: %s\n", strerror(ret));
+			ErrPrint("setinheritsched: %d\n", ret);
 		}
 	} else {
-		ErrPrint("attr_init: %s\n", strerror(ret));
+		ErrPrint("attr_init: %d\n", ret);
 	}
 	ret = pthread_create(&tcb->thid, pattr, client_cb, tcb);
 	if (pattr) {
 		pthread_attr_destroy(pattr);
 	}
 	if (ret != 0) {
-		ErrPrint("Thread creation failed: %s\n", strerror(ret));
+		ErrPrint("Thread creation failed: %d\n", ret);
 		(void)invoke_disconn_cb_list(tcb->handle, 0, 0, 0);
 		secure_socket_destroy_handle(tcb->handle);
 		tcb_destroy(tcb);
@@ -701,11 +701,11 @@ EAPI int com_core_thread_client_create(const char *addr, int is_sync, int (*serv
 	}
 
 	if (fcntl(client_fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	tcb = tcb_create(client_fd, is_sync, service_cb, data);
@@ -754,22 +754,22 @@ EAPI int com_core_thread_client_create(const char *addr, int is_sync, int (*serv
 
 		ret = pthread_attr_setscope(pattr, PTHREAD_SCOPE_SYSTEM);
 		if (ret != 0) {
-			ErrPrint("setscope: %s\n", strerror(ret));
+			ErrPrint("setscope: %d\n", ret);
 		}
 
 		ret = pthread_attr_setinheritsched(pattr, PTHREAD_EXPLICIT_SCHED);
 		if (ret != 0) {
-			ErrPrint("setinheritsched: %s\n", strerror(ret));
+			ErrPrint("setinheritsched: %d\n", ret);
 		}
 	} else {
-		ErrPrint("attr_init: %s\n", strerror(ret));
+		ErrPrint("attr_init: %d\n", ret);
 	}
 	ret = pthread_create(&tcb->thid, pattr, client_cb, tcb);
 	if (pattr) {
 		pthread_attr_destroy(pattr);
 	}
 	if (ret != 0) {
-		ErrPrint("Thread creation failed: %s\n", strerror(ret));
+		ErrPrint("Thread creation failed: %d\n", ret);
 		(void)invoke_disconn_cb_list(tcb->handle, 0, 0, 0);
 		secure_socket_destroy_handle(tcb->handle);
 		tcb_destroy(tcb);
@@ -786,7 +786,7 @@ static int validate_handle(int fd)
 
 	len = sizeof(error);
 	if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
-		ErrPrint("getsockopt: %s\n", strerror(errno));
+		ErrPrint("getsockopt: %d\n", errno);
 		return 0;
 	}
 
@@ -807,11 +807,11 @@ EAPI int com_core_thread_client_create_by_fd(int client_fd, int is_sync, int (*s
 	}
 
 	if (fcntl(client_fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s (%d)\n", strerror(errno), client_fd);
+		ErrPrint("Error: %d (%d)\n", errno, client_fd);
 	}
 
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s (%d)\n", strerror(errno), client_fd);
+		ErrPrint("Error: %d (%d)\n", errno, client_fd);
 	}
 
 	tcb = tcb_create(client_fd, is_sync, service_cb, data);
@@ -860,22 +860,22 @@ EAPI int com_core_thread_client_create_by_fd(int client_fd, int is_sync, int (*s
 
 		ret = pthread_attr_setscope(pattr, PTHREAD_SCOPE_SYSTEM);
 		if (ret != 0) {
-			ErrPrint("setscope: %s\n", strerror(ret));
+			ErrPrint("setscope: %d\n", ret);
 		}
 
 		ret = pthread_attr_setinheritsched(pattr, PTHREAD_EXPLICIT_SCHED);
 		if (ret != 0) {
-			ErrPrint("setinheritsched: %s\n", strerror(ret));
+			ErrPrint("setinheritsched: %d\n", ret);
 		}
 	} else {
-		ErrPrint("attr_init: %s\n", strerror(ret));
+		ErrPrint("attr_init: %d\n", ret);
 	}
 	ret = pthread_create(&tcb->thid, pattr, client_cb, tcb);
 	if (pattr) {
 		pthread_attr_destroy(pattr);
 	}
 	if (ret != 0) {
-		ErrPrint("Thread creation failed: %s\n", strerror(ret));
+		ErrPrint("Thread creation failed: %d\n", ret);
 		(void)invoke_disconn_cb_list(tcb->handle, 0, 0, 0);
 		secure_socket_destroy_handle(tcb->handle);
 		tcb_destroy(tcb);
@@ -901,11 +901,11 @@ EAPI int com_core_thread_server_create(const char *addr, int is_sync, const char
 	}
 
 	if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("fcntl: %s\n", strerror(errno));
+		ErrPrint("fcntl: %d\n", errno);
 	}
 
 	if (!is_sync && fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("fcntl: %s\n", strerror(errno));
+		ErrPrint("fcntl: %d\n", errno);
 	}
 
 	server = server_create(fd, service_cb, data);
@@ -1000,7 +1000,7 @@ EAPI int com_core_thread_send_with_fd(int handle, const char *buffer, int size, 
 				continue;
 			}
 
-			ErrPrint("Error: %s\n", strerror(errno));
+			ErrPrint("Error: %d\n", errno);
 			return ret;
 		} else if (ret == 0) {
 			ErrPrint("Timeout expired\n");
@@ -1096,7 +1096,7 @@ EAPI int com_core_thread_recv_with_fd(int handle, char *buffer, int size, int *s
 
 				/* Consuming the event */
 				if (read(tcb->evt_pipe[PIPE_READ], &event_ch, sizeof(event_ch)) != sizeof(event_ch)) {
-					ErrPrint("Failed to get readsize: %s\n", strerror(errno));
+					ErrPrint("Failed to get readsize: %d\n", errno);
 				} else if (event_ch == EVENT_READY) {
 					ErrPrint("Failed to get a new chunk\n");
 				} else if (event_ch == EVENT_TERM) {

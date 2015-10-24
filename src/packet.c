@@ -245,7 +245,7 @@ static inline __attribute__((always_inline)) struct data *check_and_expand_packe
 
 	new_packet = realloc(packet, sizeof(*packet) + *payload_size + BUFSIZ); /*!< Expanding to +BUFSIZ */
 	if (!new_packet) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		free(packet);
 		return NULL;
 	}
@@ -356,7 +356,7 @@ EAPI struct packet *packet_create_reply(const struct packet *packet, const char 
 
 	result = malloc(sizeof(*result));
 	if (!result) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -367,7 +367,7 @@ EAPI struct packet *packet_create_reply(const struct packet *packet, const char 
 	result->close_fd_cbdata = NULL;
 	result->data = calloc(1, payload_size);
 	if (!result->data) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		result->state = INVALID;
 		free(result);
 		return NULL;
@@ -426,7 +426,7 @@ EAPI struct packet *packet_create(const char *cmd, const char *fmt, ...)
 
 	packet = malloc(sizeof(*packet));
 	if (!packet) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -437,7 +437,7 @@ EAPI struct packet *packet_create(const char *cmd, const char *fmt, ...)
 	packet->close_fd_cbdata = NULL;
 	packet->data = calloc(1, payload_size);
 	if (!packet->data) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		packet->state = INVALID;
 		free(packet);
 		return NULL;
@@ -481,7 +481,7 @@ EAPI struct packet *packet_create_noack(const char *cmd, const char *fmt, ...)
 
 	result = malloc(sizeof(*result));
 	if (!result) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -492,7 +492,7 @@ EAPI struct packet *packet_create_noack(const char *cmd, const char *fmt, ...)
 	result->close_fd_cbdata = NULL;
 	result->data = calloc(1, payload_size);
 	if (!result->data) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		result->state = INVALID;
 		free(result);
 		return NULL;
@@ -640,7 +640,7 @@ EAPI struct packet *packet_build(struct packet *packet, int offset, void *data, 
 
 		packet = malloc(sizeof(*packet));
 		if (!packet) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 			return NULL;
 		}
 
@@ -650,7 +650,7 @@ EAPI struct packet *packet_build(struct packet *packet, int offset, void *data, 
 		packet->close_fd_cbdata = NULL;
 		packet->data = calloc(1, size);
 		if (!packet->data) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 			packet->state = INVALID;
 			free(packet);
 			return NULL;
@@ -664,7 +664,7 @@ EAPI struct packet *packet_build(struct packet *packet, int offset, void *data, 
 
 	ptr = realloc(packet->data, offset + size);
 	if (!ptr) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		packet->state = INVALID;
 		free(packet->data);
 		free(packet);

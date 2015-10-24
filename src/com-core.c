@@ -234,7 +234,7 @@ static int validate_handle(int fd)
 
 	len = sizeof(error);
 	if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
-		ErrPrint("getsockopt: %s\n", strerror(errno));
+		ErrPrint("getsockopt: %d\n", errno);
 		return 0;
 	}
 
@@ -313,11 +313,11 @@ static gboolean accept_cb(GIOChannel *src, GIOCondition cond, gpointer cbdata)
 	DbgPrint("New connectino arrived: server(%d), client(%d)\n", socket_fd, client_fd);
 
 	if (fcntl(client_fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	gio = g_io_channel_unix_new(client_fd);
@@ -368,7 +368,7 @@ EAPI int com_core_server_create(const char *addr, int is_sync, const char *label
 
 	cbdata = malloc(sizeof(*cbdata));
 	if (!cbdata) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return -ENOMEM;
 	}
 
@@ -382,11 +382,11 @@ EAPI int com_core_server_create(const char *addr, int is_sync, const char *label
 	}
 
 	if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("fcntl: %s\n", strerror(errno));
+		ErrPrint("fcntl: %d\n", errno);
 	}
 
 	if (!is_sync && fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("fcntl: %s\n", strerror(errno));
+		ErrPrint("fcntl: %d\n", errno);
 	}
 
 	DbgPrint("Create new IO channel for server FD: %d\n", fd);
@@ -445,7 +445,7 @@ EAPI int com_core_client_create(const char *addr, int is_sync, int (*service_cb)
 
 	cbdata = malloc(sizeof(*cbdata));
 	if (!cbdata) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return -ENOMEM;
 	}
 
@@ -459,11 +459,11 @@ EAPI int com_core_client_create(const char *addr, int is_sync, int (*service_cb)
 	}
 
 	if (fcntl(client_fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (!is_sync && fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	gio = g_io_channel_unix_new(client_fd);
@@ -510,7 +510,7 @@ EAPI int com_core_client_create_by_fd(int client_fd, int is_sync, int (*service_
 
 	cbdata = malloc(sizeof(*cbdata));
 	if (!cbdata) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return -ENOMEM;
 	}
 
@@ -518,11 +518,11 @@ EAPI int com_core_client_create_by_fd(int client_fd, int is_sync, int (*service_
 	cbdata->data = data;
 
 	if (fcntl(client_fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (!is_sync && fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	gio = g_io_channel_unix_new(client_fd);
@@ -561,7 +561,7 @@ EAPI int com_core_add_event_callback(enum com_core_event_type type, int (*evt_cb
 	struct evtdata *cbdata;
 	cbdata = malloc(sizeof(*cbdata));
 	if (!cbdata) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return -ENOMEM;
 	}
 
@@ -610,7 +610,7 @@ EAPI int com_core_recv_with_fd(int handle, char *buffer, int size, int *sender_p
 				DbgPrint("Select receives INTR\n");
 				continue;
 			}
-			ErrPrint("Error: %s\n", strerror(errno));
+			ErrPrint("Error: %d\n", errno);
 			return ret;
 		} else if (ret == 0) {
 			ErrPrint("Timeout expired\n");
@@ -681,7 +681,7 @@ EAPI int com_core_send_with_fd(int handle, const char *buffer, int size, double 
 				DbgPrint("Select receives INTR\n");
 				continue;
 			}
-			ErrPrint("Error: %s\n", strerror(errno));
+			ErrPrint("Error: %d\n", errno);
 			return ret;
 		} else if (ret == 0) {
 			ErrPrint("Timeout expired\n");

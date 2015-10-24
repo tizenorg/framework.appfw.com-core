@@ -79,7 +79,7 @@ static inline int create_unix_socket(const char *peer, int port, struct sockaddr
 	handle = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (handle < 0) {
 		handle = -errno;
-		ErrPrint("Failed to create a socket %s\n", strerror(errno));
+		ErrPrint("Failed to create a socket %d\n", errno);
 	}
 
 	return handle;
@@ -103,7 +103,7 @@ static inline int create_inet_socket(const char *peer, int port, struct sockaddr
 	handle = socket(AF_INET, SOCK_STREAM, 0);
 	if (handle < 0) {
 		handle = -errno;
-		ErrPrint("socket: %s\n", strerror(errno));
+		ErrPrint("socket: %d\n", errno);
 	}
 
 	return handle;
@@ -137,7 +137,7 @@ static inline int setup_unix_handle(int handle)
 	if (setsockopt(handle, SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)) < 0) {
 		int ret;
 		ret = -errno;
-		ErrPrint("Failed to change sock opt : %s\n", strerror(errno));
+		ErrPrint("Failed to change sock opt : %d\n", errno);
 		return ret;
 	}
 
@@ -173,7 +173,7 @@ static inline char *parse_scheme(const char *peer, int *port, struct function_ta
 
 		addr = strdup(peer);
 		if (!addr) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 		}
 
 		vtable->create_socket = create_unix_socket;
@@ -184,7 +184,7 @@ static inline char *parse_scheme(const char *peer, int *port, struct function_ta
 
 		addr = strdup(peer);
 		if (!addr) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 		}
 
 		vtable->create_socket = create_systemd_socket;
@@ -204,7 +204,7 @@ static inline char *parse_scheme(const char *peer, int *port, struct function_ta
 
 		addr = malloc(len + 1);
 		if (!addr) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 			goto out;
 		}
 
@@ -230,7 +230,7 @@ static inline char *parse_scheme(const char *peer, int *port, struct function_ta
 		vtable->type = (int)SCHEME_LOCAL;
 		addr = strdup(peer);
 		if (!addr) {
-			ErrPrint("Heap: %s\n", strerror(errno));
+			ErrPrint("Heap: %d\n", errno);
 			goto out;
 		}
 
@@ -291,9 +291,9 @@ EAPI int secure_socket_create_client(const char *peer)
 		ret = connect(handle, sockaddr, addrlen);
 		if (ret < 0) {
 			ret = -errno;
-			ErrPrint("Failed to connect to server [%s] %s\n", peer, strerror(errno));
+			ErrPrint("Failed to connect to server [%s] %d\n", peer, errno);
 			if (close(handle) < 0) {
-				ErrPrint("close: %s\n", strerror(errno));
+				ErrPrint("close: %d\n", errno);
 			}
 
 			return ret;
@@ -303,7 +303,7 @@ EAPI int secure_socket_create_client(const char *peer)
 	ret = vtable.setup_handle(handle);
 	if (ret < 0) {
 		if (close(handle) < 0) {
-			ErrPrint("close: %s\n", strerror(errno));
+			ErrPrint("close: %d\n", errno);
 		}
 
 		return ret;
@@ -370,11 +370,11 @@ EAPI int secure_socket_create_server_with_permission(const char *peer, const cha
 		 * It will work for you. But It just my expectation not tested.. ;)
 		 */
 		if (fsetxattr(handle, "security.SMACK64IPIN", label, strlen(label), 0) < 0) {
-			ErrPrint("Failed to set SMACK label[%s] [%s]\n", label, strerror(errno));
+			ErrPrint("Failed to set SMACK label[%s] [%d]\n", label, errno);
 		}
 
 		if (fsetxattr(handle, "security.SMACK64IPOUT", label, strlen(label), 0) < 0) {
-			ErrPrint("Failed to set SMACK label[%s] [%s]\n", label, strerror(errno));
+			ErrPrint("Failed to set SMACK label[%s] [%d]\n", label, errno);
 		}
 	}
 
@@ -390,9 +390,9 @@ EAPI int secure_socket_create_server_with_permission(const char *peer, const cha
 	ret = bind(handle, sockaddr, addrlen);
 	if (ret < 0) {
 		ret = -errno;
-		ErrPrint("bind: %s\n", strerror(errno));
+		ErrPrint("bind: %d\n", errno);
 		if (close(handle) < 0) {
-			ErrPrint("close: %s\n", strerror(errno));
+			ErrPrint("close: %d\n", errno);
 		}
 		return ret;
 	}
@@ -400,16 +400,16 @@ EAPI int secure_socket_create_server_with_permission(const char *peer, const cha
 	ret = listen(handle, BACKLOG);
 	if (ret < 0) {
 		ret = -errno;
-		ErrPrint("listen: %s\n", strerror(errno));
+		ErrPrint("listen: %d\n", errno);
 		if (close(handle) < 0) {
-			ErrPrint("close: %s\n", strerror(errno));
+			ErrPrint("close: %d\n", errno);
 		}
 		return ret;
 	}
 
 	if (vtable.type == SCHEME_LOCAL) {
 		if (chmod(peer, 0666) < 0) {
-			ErrPrint("Failed to change the permission of a socket (%s)\n", strerror(errno));
+			ErrPrint("Failed to change the permission of a socket (%d)\n", errno);
 		}
 	}
 
@@ -437,7 +437,7 @@ EAPI int secure_socket_get_connection_handle(int server_handle)
 	handle = accept(server_handle, addr, &size);
 	if (handle < 0) {
 		ret = -errno;
-		ErrPrint("Failed to accept a new client %s\n", strerror(errno));
+		ErrPrint("Failed to accept a new client %d\n", errno);
 		return ret;
 	}
 
@@ -445,7 +445,7 @@ EAPI int secure_socket_get_connection_handle(int server_handle)
 		ret = setup_unix_handle(handle);
 		if (ret < 0) {
 			if (close(handle) < 0) {
-				ErrPrint("close: %s\n", strerror(errno));
+				ErrPrint("close: %d\n", errno);
 			}
 
 			handle = ret;
@@ -454,7 +454,7 @@ EAPI int secure_socket_get_connection_handle(int server_handle)
 		ret = setup_inet_handle(handle);
 		if (ret < 0) {
 			if (close(handle) < 0) {
-				ErrPrint("close: %s\n", strerror(errno));
+				ErrPrint("close: %d\n", errno);
 			}
 
 			handle = ret;
@@ -508,10 +508,10 @@ EAPI int secure_socket_send_with_fd(int handle, const char *buffer, int size, in
 	if (ret < 0) {
 		ret = -errno;
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			ErrPrint("handle[%d] size[%d] Try again [%s]\n", handle, size, strerror(errno));
+			ErrPrint("handle[%d] size[%d] Try again [%d]\n", handle, size, errno);
 			return -EAGAIN;
 		}
-		ErrPrint("Failed to send message [%s], handle(%d)\n", strerror(errno), handle);
+		ErrPrint("Failed to send message [%d], handle(%d)\n", errno, handle);
 		return ret;
 	}
 
@@ -557,11 +557,11 @@ EAPI int secure_socket_recv_with_fd(int handle, char *buffer, int size, int *sen
 	if (ret < 0) {
 		ret = -errno;
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			ErrPrint("handle[%d] size[%d] Try again [%s]\n", handle, size, strerror(errno));
+			ErrPrint("handle[%d] size[%d] Try again [%d]\n", handle, size, errno);
 			return -EAGAIN;
 		}
 
-		ErrPrint("Failed to recvmsg [%s]\n", strerror(errno));
+		ErrPrint("Failed to recvmsg [%d]\n", errno);
 		return ret;
 	}
 
@@ -623,7 +623,7 @@ EAPI int secure_socket_destroy_handle(int handle)
 	if (close(handle) < 0) {
 		int ret;
 		ret = -errno;
-		ErrPrint("close: %s\n", strerror(errno));
+		ErrPrint("close: %d\n", errno);
 		return ret;
 	}
 

@@ -147,7 +147,7 @@ static inline struct request_ctx *create_request_ctx(int handle)
 
 	ctx = malloc(sizeof(*ctx));
 	if (!ctx) {
-		ErrPrint("Heap: %s\n", strerror(errno));
+		ErrPrint("Heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -215,7 +215,7 @@ static inline struct recv_ctx *create_recv_ctx(int handle, double timeout)
 
 	ctx = malloc(sizeof(*ctx));
 	if (!ctx) {
-		ErrPrint("heap: %s\n", strerror(errno));
+		ErrPrint("heap: %d\n", errno);
 		return NULL;
 	}
 
@@ -414,7 +414,7 @@ static int service_cb(int handle, void *data)
 		 */
 		ptr = malloc(size);
 		if (!ptr) {
-			ErrPrint("Heap: %s (%d)\n", strerror(errno), size);
+			ErrPrint("Heap: %d (%d)\n", errno, size);
 			return -ENOMEM;
 		}
 
@@ -474,7 +474,7 @@ static int service_cb(int handle, void *data)
 		 */
 		ptr = malloc(size);
 		if (!ptr) {
-			ErrPrint("Heap: %s (%d)\n", strerror(errno), size);
+			ErrPrint("Heap: %d (%d)\n", errno, size);
 			return -ENOMEM;
 		}
 
@@ -623,11 +623,11 @@ EAPI struct packet *com_core_packet_oneshot_send(const char *addr, struct packet
 	}
 
 	if (fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
-		ErrPrint("fcntl: %s\n", strerror(errno));
+		ErrPrint("fcntl: %d\n", errno);
 	}
 
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		ErrPrint("Error: %s\n", strerror(errno));
+		ErrPrint("Error: %d\n", errno);
 	}
 
 	if (packet_fd(packet) >= 0) {
@@ -641,7 +641,7 @@ EAPI struct packet *com_core_packet_oneshot_send(const char *addr, struct packet
 
 	ptr = malloc(packet_header_size());
 	if (!ptr) {
-		ErrPrint("Heap: %s (%d)\n", strerror(errno), packet_header_size());
+		ErrPrint("Heap: %d (%d)\n", errno, packet_header_size());
 		goto out;
 	}
 
@@ -685,7 +685,7 @@ EAPI struct packet *com_core_packet_oneshot_send(const char *addr, struct packet
 
 	ptr = malloc(size);
 	if (!ptr) {
-		ErrPrint("Heap: %s (%d)\n", strerror(errno), size);
+		ErrPrint("Heap: %d (%d)\n", errno, size);
 		packet_destroy(result);
 		result = NULL;
 		goto out;

@@ -23,7 +23,7 @@ do { \
 	int ret; \
 	ret = pthread_mutex_lock(handle); \
 	if (ret != 0) \
-		ErrPrint("Failed to lock: %s\n", strerror(ret)); \
+		ErrPrint("Failed to lock: %d\n", ret); \
 } while (0)
 
 #define CRITICAL_SECTION_END(handle) \
@@ -31,17 +31,17 @@ do { \
 	int ret; \
 	ret = pthread_mutex_unlock(handle); \
 	if (ret != 0) \
-		ErrPrint("Failed to unlock: %s\n", strerror(ret)); \
+		ErrPrint("Failed to unlock: %d\n", ret); \
 } while (0)
 
 #define CLOSE_PIPE(p)	do { \
 	int status; \
 	status = close(p[PIPE_READ]); \
 	if (status < 0) \
-		ErrPrint("close: %s\n", strerror(errno)); \
+		ErrPrint("close: %d\n", errno); \
 	status = close(p[PIPE_WRITE]); \
 	if (status < 0) \
-		ErrPrint("close: %s\n", strerror(errno)); \
+		ErrPrint("close: %d\n", errno); \
 } while (0)
 
 #define PIPE_READ 0
